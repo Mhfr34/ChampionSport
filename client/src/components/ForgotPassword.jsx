@@ -4,7 +4,7 @@ import TextInput from './TextInput';
 import Button from './Button';
 import axios from 'axios';
 import { CircularProgress } from '@mui/material';
-
+import { toast } from "react-toastify";
 const Container = styled.div`
   width: 100%;
   max-width: 500px;
@@ -60,7 +60,7 @@ const ForgotPassword = ({ setOpenAuth }) => {
       const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/forgot-password`, { email });
 
       if (response.data.message) {
-        setMessage('Password reset link sent to your email.');
+        toast.success('Password reset link sent to your email.');
       } else {
         setError(response.data.message || 'Something went wrong');
       }
