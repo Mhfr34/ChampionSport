@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import TextInput from './TextInput';
 import Button from './Button';
-import axios from 'axios';
 import { CircularProgress } from '@mui/material';
+import { toast } from 'react-toastify'; // for notifications
 
 const Container = styled.div`
   width: 100%;
@@ -57,15 +57,29 @@ const ForgotPassword = ({ setOpenAuth }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/forgot-password`, { email });
 
-      if (response.data.message) {
+      // Make API call similar to UploadProduct logic
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/forgot-password`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const responseData = await response.json();
+
+      if (responseData.success) {
         setMessage('Password reset link sent to your email.');
+        toast.success(responseData.message); // show success toast
       } else {
-        setError(response.data.message || 'Something went wrong');
+        setError(responseData.message || 'Something went wrong');
+        toast.error(responseData.message); // show error toast
       }
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred');
+      toast.error('An error occurred'); // show error toast
     } finally {
       setLoading(false);
     }
@@ -80,7 +94,7 @@ const ForgotPassword = ({ setOpenAuth }) => {
         placeholder="Enter your email address"
         name="email"
         value={email}
-        handleChange={handleChange} // Ensure the prop is named correctly
+        handleChange={handleChange}
         error={error}
       />
       <Message isError={!!error}>{error || message}</Message>
