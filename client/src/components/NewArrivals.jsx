@@ -85,7 +85,7 @@ const NewArrivals = () => {
       }
     } catch (error) {
       console.error("Error fetching favorites:", error);
-      toast.error("An error occurred while fetching favorite products.");
+      
     }
   };
   

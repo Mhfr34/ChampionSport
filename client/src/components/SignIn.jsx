@@ -4,6 +4,7 @@ import TextInput from './TextInput';
 import Button from './Button';
 // import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Container = styled.div`
   width: 100%;
@@ -105,7 +106,9 @@ const SignIn = ({ setOpenAuth, onForgotPassword }) => {
         localStorage.setItem('authToken', response.data.data.token); // Store JWT token
         localStorage.setItem('userRole', response.data.data.role); // Store user role
         localStorage.setItem('userId', response.data.data._id); // Make sure _id is not undefined // Store user ID
+        
         setOpenAuth(false); // Close SignIn modal after successful login
+        toast.success('Login successful');
         window.location.reload(); // Refresh the page to update authentication state
       } else {
         setServerError(response.data.message); // Set error message from server
