@@ -124,7 +124,7 @@ const NewArrivalsLimited = () => {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(
-          "https://champion-sport.vercel.app/api/last-eight-product"
+          `${process.env.REACT_APP_BACKEND_URL}/api/last-eight-product`
         );
         setProducts(response.data.data);
         setLoading(false);

@@ -137,7 +137,7 @@ const ChangePassword = ({ onClose }) => {
     try {
       setLoading(true);
       const response = await axios.post(
-        `http://localhost:8080/api/reset-password/${token}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/reset-password/${token}`,
         { newPassword: formData.newPassword }
       );
 

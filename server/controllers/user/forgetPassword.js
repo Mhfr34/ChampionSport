@@ -32,7 +32,7 @@ async function forgetPassword(req, res) {
     });
 
     // Send the reset password email
-    const resetLink = `http://localhost:3000/change-password/${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL}/change-password/${resetToken}`;
     const mailOptions = {
       to: user.email,
       from: process.env.EMAIL_USER,

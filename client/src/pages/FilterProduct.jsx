@@ -32,7 +32,7 @@ const FilterProduct = () => {
         const categoriesArray = categoryParams ? categoryParams.split(",") : [];
         setSelectedCategories(categoriesArray);
 
-        const response = await axios.post("http://localhost:8080/api/filter-product", {
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/filter-product`, {
           category: categoriesArray.length ? categoriesArray : undefined,
         });
 
@@ -49,7 +49,7 @@ const FilterProduct = () => {
       if (!token) return;
 
       try {
-        const response = await axios.get("http://localhost:8080/api/get-favorite-products", {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setFavorites(response.data.data);
@@ -100,7 +100,7 @@ const FilterProduct = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/delete-product",
+        `${process.env.REACT_APP_BACKEND_URL}/api/delete-product`,
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -124,8 +124,8 @@ const FilterProduct = () => {
     }
 
     const endpoint = isFavorite
-      ? "http://localhost:8080/api/remove-from-favorites"
-      : "http://localhost:8080/api/add-to-favorites";
+      ? `${process.env.REACT_APP_BACKEND_URL}/api/remove-from-favorites`
+      : `${process.env.REACT_APP_BACKEND_URL}/api/add-to-favorites`;
 
     try {
       const response = await axios.post(

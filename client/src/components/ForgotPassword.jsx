@@ -57,7 +57,7 @@ const ForgotPassword = ({ setOpenAuth }) => {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:8080/api/forgot-password', { email });
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/forgot-password`, { email });
 
       if (response.data.message) {
         setMessage('Password reset link sent to your email.');

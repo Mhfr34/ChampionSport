@@ -93,7 +93,7 @@ const SignIn = ({ setOpenAuth, onForgotPassword }) => {
       setLoading(true);
       // Send sign-in request to the backend
       const response = await axios.post(
-        'http://localhost:8080/api/login',
+        `${process.env.REACT_APP_BACKEND_URL}/api/login`,
         formData,
         {
           withCredentials: true, // To handle cookies for JWT

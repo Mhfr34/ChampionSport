@@ -75,7 +75,7 @@ const SignUp = ({ setOpenAuth }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/signup",
+        `${process.env.REACT_APP_BACKEND_URL}/api/signup`,
         formData,
         {
           headers: {

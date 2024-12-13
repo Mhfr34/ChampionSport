@@ -50,7 +50,7 @@ const Favorite = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:8080/api/get-favorite-products",
+        `${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -75,8 +75,8 @@ const Favorite = () => {
     }
 
     const endpoint = isFavorite
-      ? "http://localhost:8080/api/remove-from-favorites"
-      : "http://localhost:8080/api/add-to-favorites";
+      ? `${process.env.REACT_APP_BACKEND_URL}/api/remove-from-favorites`
+      : `${process.env.REACT_APP_BACKEND_URL}/api/add-to-favorites`;
 
     try {
       const response = await axios.post(

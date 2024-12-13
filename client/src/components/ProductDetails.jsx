@@ -156,7 +156,7 @@ const ProductDetails = () => {
   const fetchProductDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:8080/api/product-details", {
+      const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/product-details`, {
         productId: params?.id,
       });
       setData(response.data?.data);

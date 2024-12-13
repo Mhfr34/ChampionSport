@@ -12,7 +12,7 @@ const Search = () => {
     
     const fetchSearchResults = async (query) => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/search?q=${query}`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/search?q=${query}`);
         if (response.data.success) {
           setProducts(response.data.data);
         } else {
@@ -28,7 +28,7 @@ const Search = () => {
         const token = localStorage.getItem("authToken");
         if (!token) return;
   
-        const response = await axios.get("http://localhost:8080/api/get-favorite-products", {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`, {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -50,8 +50,8 @@ const Search = () => {
       }
   
       const endpoint = isFavorite
-        ? "http://localhost:8080/api/remove-from-favorites"
-        : "http://localhost:8080/api/add-to-favorites";
+        ? `${process.env.REACT_APP_BACKEND_URL}/api/remove-from-favorites`
+        : `${process.env.REACT_APP_BACKEND_URL}/api/add-to-favorites`;
   
       try {
         const response = await axios.post(endpoint, { productId }, { headers: { Authorization: `Bearer ${token}` } });

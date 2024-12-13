@@ -46,7 +46,7 @@ const NewArrivals = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/get-all-product");
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-all-product`);
       if (response.data.success) {
         setProducts(response.data.data);
       } else {
@@ -65,7 +65,7 @@ const NewArrivals = () => {
         return;
       }
   
-      const response = await axios.get("http://localhost:8080/api/get-favorite-products", {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -118,7 +118,7 @@ const NewArrivals = () => {
       }
 
       const response = await axios.post(
-        "http://localhost:8080/api/delete-product",
+        `${process.env.REACT_APP_BACKEND_URL}/api/delete-product`,
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -143,8 +143,8 @@ const NewArrivals = () => {
     }
   
     const endpoint = isFavorite
-      ? "http://localhost:8080/api/remove-from-favorites"
-      : "http://localhost:8080/api/add-to-favorites";
+      ? `${process.env.REACT_APP_BACKEND_URL}/api/remove-from-favorites`
+      : `${process.env.REACT_APP_BACKEND_URL}/api/add-to-favorites`;
   
     try {
       const response = await axios.post(

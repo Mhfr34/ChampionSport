@@ -214,7 +214,7 @@ const UpdateProduct = ({ productData, onClose }) => {
       };
 
       const response = await axios.post(
-        "http://localhost:8080/api/update-product",
+       `${process.env.REACT_APP_BACKEND_URL}/api/update-product`,
         data,
         config
       );

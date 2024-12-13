@@ -30,15 +30,17 @@ const BrandsContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   margin: 20px 0;
-  gap: 1px;
+  gap: 20px; /* Set a consistent gap for desktop */
   margin-right: 60px;
+  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
+  
   @media (max-width: 768px) {
-  justify-content: center;
-    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px; /* Adjust gap to 20px on smaller screens */
     margin-right: 15px;
-       gap: 30px;
   }
 `;
+
 
 const BrandBox = styled.div`
   width: 220px;
