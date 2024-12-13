@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db.js");
-const router = require("./routes/index.js");
+const router = require("./routes");
 const cookieParser = require("cookie-parser");
 
 
@@ -13,6 +13,9 @@ const app = express();
 // Middleware to parse JSON requests
 app.use(express.json({ limit: '50mb' }));
 app.use(cookieParser());
+
+
+
 
 // CORS middleware function
 const allowCors = (fn) => async (req, res) => {
