@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const userModel = require("../../models/userModel");
 const nodemailer = require("nodemailer");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 async function forgetPassword(req, res) {
   try {
