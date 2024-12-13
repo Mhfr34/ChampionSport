@@ -1,9 +1,7 @@
 const express = require("express");
-
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
 const router = require("./routes");
-
 require("dotenv").config();
 
 const app = express();
@@ -18,35 +16,34 @@ const allowCors = (fn) => async (req, res) => {
 
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
-      res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Origin', origin); // Allow specific origin
   }
 
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, PATCH, DELETE, POST, PUT');
+  res.setHeader('Access-Control-Allow-Credentials', true); // Allow credentials (cookies, etc.)
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, PATCH, DELETE, POST, PUT'); // Allow methods
   res.setHeader(
-      'Access-Control-Allow-Headers',
-      'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  ); // Allow headers
 
   // Handle preflight requests (OPTIONS)
   if (req.method === 'OPTIONS') {
-      res.status(200).end();
-      return;
+    res.status(200).end();
+    return;
   }
 
-  // Call the actual request handler function
+  // Call the actual route handler
   return await fn(req, res);
 };
 
-// Route middleware
+// Use the CORS middleware for all routes
 app.use("/api", allowCors(router));
 
-
-// Connect to database
-const PORT = process.env.PORT || 8080;
+// Connect to the database
 connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log("Connected to DB");
-        console.log(`Server is running on port ${PORT}`);
-    });
+  const PORT = process.env.PORT || 8080;
+  app.listen(PORT, () => {
+    console.log("Connected to DB");
+    console.log(`Server is running on port ${PORT}`);
+  });
 });
