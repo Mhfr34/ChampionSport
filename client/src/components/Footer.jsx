@@ -17,7 +17,7 @@ const FooterContent = styled.div`
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
-  max-width: 1500px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 20px;
   @media screen and (max-width: 768px) {

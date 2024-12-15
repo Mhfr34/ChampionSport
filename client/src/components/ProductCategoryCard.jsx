@@ -3,19 +3,29 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { HiArrowLongRight } from "react-icons/hi2";
 
-
 const Card = styled.div`
   width: 500px;
   height: 500px;
   display: flex;
   transition: all 0.3s ease-out;
   cursor: pointer;
+
   &:hover {
     transform: translateY(-4px);
   }
+
+  @media (max-width: 1024px) {
+    width: 90%;
+    height: 400px;
+  }
+
   @media (max-width: 768px) {
     width: 100%;
     height: 370px;
+  }
+
+  @media (max-width: 480px) {
+    height: 300px;
   }
 `;
 
@@ -30,15 +40,20 @@ const Top = styled.div`
 
 const Image = styled.img`
   width: 86%;
-  height: 100%; 
+  height: 100%;
   object-fit: fill;
   transition: transform 0.3s ease-out;
+
   &:hover {
     transform: scale(1.05);
   }
-  @media (max-width: 768px) {
+
+  @media (max-width: 1024px) {
     width: 90%;
-    height: 100%;
+  }
+
+  @media (max-width: 768px) {
+    width: 95%;
   }
 `;
 
@@ -50,8 +65,13 @@ const Menu = styled.div`
   display: flex;
   justify-content: center;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    @media (max-width: 768px) {
-   bottom: 40px;
+
+  @media (max-width: 768px) {
+    bottom: 40px;
+  }
+
+  @media (max-width: 480px) {
+    bottom: 30px;
   }
 `;
 
@@ -77,18 +97,22 @@ const Button = styled.div`
   @media (max-width: 768px) {
     padding: 4px 15px;
   }
-   
 `;
 
 const SPANE = styled.h3`
-font-size:14px;
-margin-right:10px;
+  font-size: 14px;
+  margin-right: 10px;
+
   @media (max-width: 768px) {
-   font-size:10px;
-margin-right:10px;
+    font-size: 10px;
+    margin-right: 8px;
   }
 
-`
+  @media (max-width: 480px) {
+    font-size: 9px;
+    margin-right: 6px;
+  }
+`;
 
 const ProductCategoryCard = ({ category }) => {
   const navigate = useNavigate();
@@ -99,7 +123,7 @@ const ProductCategoryCard = ({ category }) => {
         <Menu>
           <Button>
             <SPANE>{category.name}</SPANE>
-            <HiArrowLongRight style={{ fontSize: "1.7rem"}} />
+            <HiArrowLongRight style={{ fontSize: "1.7rem" }} />
           </Button>
         </Menu>
       </Top>

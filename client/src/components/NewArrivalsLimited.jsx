@@ -36,6 +36,9 @@ const ProductCard = styled(Link)` /* Updated to be a Link component */
   &:hover {
     transform: scale(1.05);
   }
+    @media (min-width: 1600px) {
+    width: 350px;
+  }
 `;
 
 const ProductImage = styled.img`

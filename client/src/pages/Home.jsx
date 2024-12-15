@@ -26,16 +26,27 @@ const Container = styled.div`
 const Section = styled(motion.div)`
   // Updated to motion.div
   width: 100%;
-  max-width: 1500px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 `;
 
+const Section1 = styled(motion.div)`
+  // Updated to motion.div
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  max-height:91vh;
+`;
+
 const Section2 = styled(motion.div)`
   // Updated to motion.div
   width: 100%;
-  max-width: 1500px;
+  max-width: 100%;
   display: flex;
   flex-direction: column;
   align-items: space-between;
@@ -130,7 +141,7 @@ const Home = () => {
 
   return (
     <Container>
-      <Section
+      <Section1
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -138,7 +149,7 @@ const Home = () => {
       >
         <Title>Champions Keep Playing Until They Win.</Title>
         <VideoBanner />
-      </Section>
+      </Section1>
 
       <Section
         initial="hidden"

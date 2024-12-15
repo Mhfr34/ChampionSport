@@ -13,12 +13,19 @@ import {
 import UploadProduct from "./UploadProduct"; // Import UploadProduct component
 
 // Styled components
+
+const UserMenuWrapper = styled.div`
+  position: relative;
+  display: inline-block; /* Ensures dropdown aligns with the icon */
+`;
+
 const Nav = styled.div`
   background-color: ${({ theme }) => theme.bg};
   height: 80px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  width: 100%;
   font-size: 1rem;
   position: sticky;
   top: 0;
@@ -29,7 +36,7 @@ const Nav = styled.div`
 
 const NavbarContainer = styled.div`
   width: 100%;
-  max-width: 1400px;
+  max-width: 100%;
   padding: 0 24px;
   display: flex;
   gap: 14px;
@@ -160,8 +167,10 @@ const CancelButton = styled.button`
 
 const DropdownMenu = styled.div`
   position: absolute;
-  top: 50px;
-  right: 140px;
+  width: max-content;
+  top: 40px; /* Adjust based on the icon's size and position */
+  left: 50%;
+  transform: translateX(-50%); /* Centers the dropdown below the icon */
   background-color: ${({ theme }) => theme.bg};
   border-radius: 8px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
@@ -180,6 +189,7 @@ const DropdownMenu = styled.div`
     }
   }
 `;
+
 // Modal styling for UploadProduct
 const ModalOverlay = styled.div`
   position: fixed;
@@ -316,81 +326,90 @@ const Navbar = ({ openAuth, setOpenAuth }) => {
         </NavLogo>
 
         <NavItems isSearchOpen={isSearchOpen} isMobileOpen={isOpen}>
-          {/* Navigation links */}
-          <StyledNavLink
-            to="/"
-            onClick={() => {
-              setIsOpen(false);
-              setIsSearchOpen(false);
-            }}
-          >
-            Home
-          </StyledNavLink>
-          <StyledNavLink
-          to="#"
-          onClick={(e) => {
-            e.preventDefault(); // Prevent default behavior for NavLink
-            scrollToSection();
-          }}
-        >
-            Shop
-          </StyledNavLink>
-          <StyledNavLink
-            to="/New_arrivals"
-            onClick={() => {
-              setIsOpen(false);
-              setIsSearchOpen(false);
-            }}
-          >
-            New Arrivals{" "}
-            <AiFillFire style={{ color: "#FF5733",fontSize:"18px" ,outlineColor:"black"}}  />
-          </StyledNavLink>
+  {/* Navigation links */}
+  <StyledNavLink
+    to="/"
+    onClick={() => {
+      setIsOpen(false);
+      setIsSearchOpen(false);
+    }}
+  >
+    Home
+  </StyledNavLink>
+  <StyledNavLink
+    to="#"
+    onClick={(e) => {
+      e.preventDefault(); // Prevent default behavior for NavLink
+      scrollToSection();
+    }}
+  >
+    Shop
+  </StyledNavLink>
+  <StyledNavLink
+    to="/New_arrivals"
+    onClick={() => {
+      setIsOpen(false);
+      setIsSearchOpen(false);
+    }}
+  >
+    New Arrivals{" "}
+    <AiFillFire
+      style={{ color: "#FF5733", fontSize: "18px", outlineColor: "black" }}
+    />
+  </StyledNavLink>
 
+  <StyledNavLink
+    to="#"
+    onClick={(e) => {
+      e.preventDefault(); // Prevent default behavior for NavLink
+      scrollToFooter();
+    }}
+  >
+    Contact Us
+  </StyledNavLink>
+
+  {isOpen &&
+    (!isAuthenticated ? (
+      <StyledNavLink
+        to="#"
+        onClick={() => {
+          setOpenAuth(true);
+          setIsOpen(false);
+          setIsSearchOpen(false);
+        }}
+      >
+        Sign In
+      </StyledNavLink>
+    ) : (
+      // Reorder: Display "Upload Product" before "Logout"
+      <>
+        {userRole === "ADMIN" && (
           <StyledNavLink
             to="#"
             onClick={(e) => {
-              e.preventDefault(); // Prevent default behavior for NavLink
-              scrollToFooter();
+              e.preventDefault(); // Prevent default navigation
+              openUploadProductModal(); // Open the modal
+              setIsOpen(false); // Close the mobile menu
             }}
           >
-            Contact Us
+            Upload Product
           </StyledNavLink>
-          {isOpen && (
-            <StyledNavLink
-              to="/favorite"
-              onClick={() => {
-                setIsOpen(false);
-                setIsSearchOpen(false);
-              }}
-            >
-              Favorite
-            </StyledNavLink>
-          )}
-          {isOpen &&
-            (!isAuthenticated ? (
-              <StyledNavLink
-                to="#"
-                onClick={() => {
-                  setOpenAuth(true);
-                  setIsOpen(false);
-                  setIsSearchOpen(false);
-                }}
-              >
-                Sign In
-              </StyledNavLink>
-            ) : (
-              <StyledNavLink
-                to="#"
-                onClick={() => {
-                  handleLogout();
-                  setIsOpen(false);
-                  setIsSearchOpen(false);
-                }}
-              >
-                Logout
-              </StyledNavLink>
-            ))}
-        </NavItems>
+        )}
+        <StyledNavLink
+          to="#"
+          onClick={() => {
+            handleLogout();
+            setIsOpen(false);
+            setIsSearchOpen(false);
+          }}
+        >
+          Logout
+        </StyledNavLink>
+      </>
+    ))}
+</NavItems>
+
+
 
         <SearchBarContainer isSearchOpen={isSearchOpen}>
           <SearchIcon />
@@ -424,35 +443,36 @@ const Navbar = ({ openAuth, setOpenAuth }) => {
           </StyledNavLink>
 
           {userRole && (
-            <div ref={userIconRef} onClick={toggleDropdown}>
-              <FaCircleUser
-                style={{
-                  color: "black",
-                  marginLeft: "8px",
-                  fontSize: "30px",
-                  cursor: "pointer",
-                }}
-              />
-              <DropdownMenu isOpen={isDropdownOpen}>
-                {userRole === "ADMIN" && (
-                  <button
-                    onClick={openUploadProductModal}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "inherit",
-                      cursor: "pointer",
-                      padding: "8px 12px",
-                      display: "block",
-                      fontWeight: "500",
-                    }}
-                  >
-                    Upload Product
-                  </button>
-                )}
-              </DropdownMenu>
-            </div>
-          )}
+  <UserMenuWrapper ref={userIconRef}>
+    <FaCircleUser
+      style={{
+        color: "black",
+        marginLeft: "8px",
+        fontSize: "30px",
+        cursor: "pointer",
+      }}
+      onClick={toggleDropdown}
+    />
+    <DropdownMenu isOpen={isDropdownOpen}>
+      {userRole === "ADMIN" && (
+        <button
+          onClick={openUploadProductModal}
+          style={{
+            background: "none",
+            border: "none",
+            color: "inherit",
+            cursor: "pointer",
+            padding: "8px 12px",
+            display: "block",
+            fontWeight: "500",
+          }}
+        >
+          Upload Product
+        </button>
+      )}
+    </DropdownMenu>
+  </UserMenuWrapper>
+)}
           {!isAuthenticated ? (
             <Button
               text="Sign In"

@@ -31,6 +31,7 @@ export default Branches;
 
 // Styled Components
 const Container = styled.div`
+  width: 100%;
   text-align: center;
   padding: 20px;
 `;
@@ -78,34 +79,34 @@ const CircleImage = styled.img`
 `;
 
 const BranchDetails = styled.div`
-  max-width: 1200px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0;
 
   @media (max-width: 768px) {
-    padding: 0 15px;
+    padding: 0;
   }
 
   @media (max-width: 480px) {
-    padding: 0 10px;
+    padding: 0;
   }
 `;
 
 const BranchImage = styled.img`
-  width: 1200px;
+  width: 100%;
   max-height: 500px;
-  object-fit: cover;
+  object-fit: fill;
   border-radius: 12px;
   margin-bottom: 20px;
 
   @media (max-width: 768px) {
-  width: 600px;
+  width: 100%;
     max-height: 350px;
   }
 
   @media (max-width: 480px) {
     max-height: 200px;
-    width: 600px;
+    width: 100%;
   }
 `;
 
