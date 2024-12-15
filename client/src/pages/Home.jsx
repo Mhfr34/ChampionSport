@@ -39,8 +39,7 @@ const Section1 = styled(motion.div)`
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
-  max-height:91vh;
+  height: auto;
 `;
 
 const Section2 = styled(motion.div)`
