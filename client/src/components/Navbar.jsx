@@ -381,9 +381,9 @@ const Navbar = ({ openAuth, setOpenAuth }) => {
         Sign In
       </StyledNavLink>
     ) : (
-      // Reorder: Display "Upload Product" before "Logout"
+      // Conditional rendering for admin and non-admin users
       <>
-        {userRole === "ADMIN" && (
+        {userRole === "ADMIN" ? (
           <StyledNavLink
             to="#"
             onClick={(e) => {
@@ -393,6 +393,16 @@ const Navbar = ({ openAuth, setOpenAuth }) => {
             }}
           >
             Upload Product
+          </StyledNavLink>
+        ) : (
+          <StyledNavLink
+            to="/favorite"
+            onClick={() => {
+              setIsOpen(false);
+              setIsSearchOpen(false);
+            }}
+          >
+            Favorite
           </StyledNavLink>
         )}
         <StyledNavLink
@@ -408,6 +418,7 @@ const Navbar = ({ openAuth, setOpenAuth }) => {
       </>
     ))}
 </NavItems>
+
 
 
 
