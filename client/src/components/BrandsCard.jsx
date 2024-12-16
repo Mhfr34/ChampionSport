@@ -39,6 +39,7 @@ const BrandsContainer = styled.div`
     gap: 20px; /* Adjust gap to 20px on smaller screens */
     margin-right: 15px;
   }
+    
 `;
 
 
@@ -55,6 +56,10 @@ const BrandBox = styled.div`
     width: 152px;
     height: 152px;
  
+  }
+    @media (min-width: 1600px) {
+    width: 300px;
+    height: 300px;
   }
 `;
 
