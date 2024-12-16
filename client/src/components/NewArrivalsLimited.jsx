@@ -23,28 +23,25 @@ const ProductCard = styled(Link)` /* Updated to be a Link component */
   flex-direction: column;
   justify-content: space-between;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px;
-  width: 250px;
+  width: 290px;
   background-color: #fff;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
   text-decoration: none; /* Remove underline */
   color: inherit; /* Inherit text color */
-
   &:hover {
     transform: scale(1.05);
   }
     @media (min-width: 1600px) {
-    width: 350px;
+    width: 390px;
   }
 `;
 
 const ProductImage = styled.img`
   width: 100%;
   height: 50%;
-  border-radius: 8px;
+  
   margin-bottom: 10px;
 `;
 
