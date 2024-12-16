@@ -40,6 +40,9 @@ const Section1 = styled(motion.div)`
   flex-direction: column;
   align-items: center;
   height: auto;
+  @media (min-width: 800px) {
+    height: 630px;
+  }
 `;
 
 const Section2 = styled(motion.div)`
