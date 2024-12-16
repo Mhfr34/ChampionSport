@@ -27,13 +27,10 @@ export default BrandsCard;
 // Styled Components
 const BrandsContainer = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
   align-items: center;
-  margin: 20px 0;
   gap: 20px; /* Set a consistent gap for desktop */
-  margin-right: 60px;
   flex-wrap: wrap; /* Ensures wrapping on smaller screens */
-  
   @media (max-width: 768px) {
     justify-content: center;
     gap: 20px; /* Adjust gap to 20px on smaller screens */
@@ -44,8 +41,8 @@ const BrandsContainer = styled.div`
 
 
 const BrandBox = styled.div`
-  width: 220px;
-  height: 220px;
+  width: 200px;
+  height: 200px;
   display: flex;
   justify-content: center;
   align-items: center;
