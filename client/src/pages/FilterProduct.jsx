@@ -199,8 +199,9 @@ const FilterProduct = () => {
             </Icons>
             <Info>
               <ProductName>{product.productName}</ProductName>
-              <Price>${product.price.toFixed(2)}</Price>
               <Brand>{product.category}</Brand>
+              <Price>${product.price}</Price>
+              <Description>{product.description}</Description>
             </Info>
           </Card>
         ))}
@@ -301,8 +302,8 @@ const Card = styled.div`
 
 const Image = styled.img`
   width: 100%;
-  height: 180px;
-  object-fit: contain;
+  height: 280px;
+
 `;
 
 const Icons = styled.div`
@@ -374,10 +375,17 @@ const ProductName = styled.h2`
 
 const Price = styled.p`
   font-size: 16px;
+  font-weight: bold;
   color: #222;
+  margin: 0 0 10px;
 `;
 
 const Brand = styled.p`
   font-size: 14px;
   color: #666;
+`;
+const Description = styled.p`
+  font-size: 14px;
+  color: #777;
+  line-height: 1.5;
 `;

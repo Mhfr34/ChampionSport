@@ -8,7 +8,7 @@ const Container = styled.div`
   flex-direction: column;
   align-items: flex-start;
   padding: 16px;
-  max-width: 800px;
+  width: 1200px;
   width: 100%;
 `;
 
@@ -27,7 +27,6 @@ const ImageContainer = styled.div`
   display: flex;
   flex-direction: column-reverse;
   gap: 16px;
-  width: 100%;
   @media (min-width: 768px) {
     flex-direction: row-reverse;
   }
@@ -42,6 +41,7 @@ const ActiveImageWrapper = styled.div`
   @media (max-width: 768px) {
     height: 300px;
     width: 300px;
+    
   }
 `;
 
@@ -49,7 +49,7 @@ const ActiveImage = styled.img`
   height: 100%;
   width: 100%;
   object-fit: fill;
-  transition: transform 0.2s ease, transform-origin 0.2s ease;
+  transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), transform-origin 0.5s cubic-bezier(0.4, 0.0, 0.2, 1);
 `;
 
 const ImageList = styled.div`
@@ -179,6 +179,7 @@ const ProductDetails = () => {
     setZoomStyle({
       transform: "scale(2)", // Adjust scale for desired zoom level
       transformOrigin: `${x}% ${y}%`,
+      transition: "transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)", // Smooth scaling
     });
   };
 

@@ -50,7 +50,7 @@ const ProductName = styled.h3`
   color: #333;
   margin-bottom: 8px;
   height: 48px;
-  overflow: hidden;
+  
 `;
 
 const BrandName = styled.p`
