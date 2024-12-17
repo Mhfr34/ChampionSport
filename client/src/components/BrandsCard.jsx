@@ -13,13 +13,15 @@ const brands = [
 const BrandsCard = () => {
   return (
     <div style={{ marginLeft: "20px" }}>
-      <Title>Top Brands</Title>
       <BrandsContainer>
-        {brands.map((brand, index) => (
-          <BrandBox key={index}>
-            <BrandLogo src={brand.logo} alt={brand.name} />
-          </BrandBox>
-        ))}
+        <Title>Top Brands</Title>
+        <BrandsWrapper>
+          {brands.map((brand, index) => (
+            <BrandBox key={index}>
+              <BrandLogo src={brand.logo} alt={brand.name} />
+            </BrandBox>
+          ))}
+        </BrandsWrapper>
       </BrandsContainer>
     </div>
   );
@@ -28,6 +30,13 @@ const BrandsCard = () => {
 export default BrandsCard;
 
 // Styled Components
+const BrandsContainer = styled.div`
+  display: flex;
+  flex-direction: column;  /* Stack title and brand logos vertically */
+  align-items: flex-start;
+  width: 100%;
+`;
+
 const Title = styled.h2`
   font-weight: bold;
   color: black;
@@ -35,16 +44,14 @@ const Title = styled.h2`
   margin-bottom: 20px;
 `;
 
-const BrandsContainer = styled.div`
+const BrandsWrapper = styled.div`
   display: flex;
-  justify-content: center; /* Ensure equal spacing between items */
-  width: 100%;
-  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* Align items from the start */
   gap: 20px;
+  width: 100%;
   @media (max-width: 768px) {
     justify-content: center;
-    gap: 20px; /* Adjust gap to 20px on smaller screens */
-    margin-right: 15px;
   }
 `;
 
