@@ -62,8 +62,8 @@ const Logo = styled.img`
   width: 120px;  /* Allow width to adjust for mobile */
   max-width: 100%;  /* Ensure the logo scales down properly */
   @media (max-width: 768px) {
-    height: 60px; /* Adjust the logo size on mobile if necessary */
-    width: auto;
+    height: 80px; /* Adjust the logo size on mobile if necessary */
+    width: 80px;
   }
 `;
 
