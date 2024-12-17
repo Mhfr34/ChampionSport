@@ -12,7 +12,7 @@ const brands = [
 
 const BrandsCard = () => {
   return (
-    <div>
+    <div style={{ marginLeft: "20px" }}>
       <Title>Top Brands</Title>
       <BrandsContainer>
         {brands.map((brand, index) => (
@@ -37,11 +37,10 @@ const Title = styled.h2`
 
 const BrandsContainer = styled.div`
   display: flex;
-  justify-content: space-between; /* Ensure equal spacing between items */
+  justify-content: center; /* Ensure equal spacing between items */
   width: 100%;
   align-items: center;
   gap: 20px;
-  flex-wrap: wrap;
   @media (max-width: 768px) {
     justify-content: center;
     gap: 20px; /* Adjust gap to 20px on smaller screens */
