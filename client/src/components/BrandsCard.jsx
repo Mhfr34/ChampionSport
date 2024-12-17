@@ -62,8 +62,8 @@ const BrandBox = styled.div`
     height: 152px;
   }
   @media (min-width: 1600px) {
-    width: 300px;
-    height: 300px;
+    width: 270px;
+    height: 270px;
   }
 `;
 
