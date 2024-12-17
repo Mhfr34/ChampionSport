@@ -49,8 +49,8 @@ const BrandsContainer = styled.div`
 `;
 
 const BrandBox = styled.div`
-  width: 210px;
-  height: 210px;
+  width: 180px;
+  height: 180px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -62,8 +62,8 @@ const BrandBox = styled.div`
     height: 152px;
   }
   @media (min-width: 1600px) {
-    width: 220px;
-    height: 220px;
+    width: 300px;
+    height: 300px;
   }
 `;
 
