@@ -61,10 +61,7 @@ const Logo = styled.img`
   height: 120px; /* Ensure the logo doesn't overflow on small screens */
   width: 120px;  /* Allow width to adjust for mobile */
   max-width: 100%;  /* Ensure the logo scales down properly */
-  @media (max-width: 768px) {
-    height: 80px; /* Adjust the logo size on mobile if necessary */
-    width: 80px;
-  }
+
 `;
 
 const NavItems = styled.ul`
