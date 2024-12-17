@@ -45,18 +45,7 @@ const Section1 = styled(motion.div)`
   }
 `;
 
-const Section2 = styled(motion.div)`
-  // Updated to motion.div
-  width: 100%;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: space-between;
-  margin-left: 100px;
-  @media (max-width: 768px) {
-    margin-left: 20px;
-  }
-`;
+
 
 const Title = styled(motion.div)`
   // Updated to motion.div
@@ -76,16 +65,7 @@ const Title = styled(motion.div)`
   }
 `;
 
-const Title2 = styled(motion.h2)`
-  // Updated to motion.h2
-  font-size: 25px;
-  font-family: arial;
-  font-weight: bold;
-  color: black;
-  @media (max-width: 768px) {
-    font-size: 20px;
-  }
-`;
+
 
 const CardWrapper = styled(motion.div)`
   // Updated to motion.div
@@ -172,19 +152,18 @@ const Home = () => {
         </CardWrapper>
       </Section>
 
-      <Section2
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={slideIn}
-      >
-        <Title2>Top Brands</Title2>
+     
         <BrandsCard />
-      </Section2>
-      <Section>
-        <Title3>New Arrivals - All Categories</Title3>
-        <NewArrivalsLimited />
-      </Section>
+      
+        <Section
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.2 }}
+  variants={slideIn}  // Applying the slideIn animation
+>
+  <Title3>New Arrivals - All Categories</Title3>
+  <NewArrivalsLimited />
+</Section>
       <Section>
         <Title3>Our Branches</Title3>
         <Branches />

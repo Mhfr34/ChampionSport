@@ -12,37 +12,46 @@ const brands = [
 
 const BrandsCard = () => {
   return (
-    <BrandsContainer>
-      {brands.map((brand, index) => (
-        <BrandBox key={index}>
-          <BrandLogo src={brand.logo} alt={brand.name} />
-        </BrandBox>
-      ))}
-    </BrandsContainer>
+    <div>
+      <Title>Top Brands</Title>
+      <BrandsContainer>
+        {brands.map((brand, index) => (
+          <BrandBox key={index}>
+            <BrandLogo src={brand.logo} alt={brand.name} />
+          </BrandBox>
+        ))}
+      </BrandsContainer>
+    </div>
   );
 };
 
 export default BrandsCard;
 
 // Styled Components
+const Title = styled.h2`
+  font-weight: bold;
+  color: black;
+  text-align: left;
+  margin-bottom: 20px;
+`;
+
 const BrandsContainer = styled.div`
   display: flex;
-  justify-content: start;
+  justify-content: space-between; /* Ensure equal spacing between items */
+  width: 100%;
   align-items: center;
-  gap: 20px; /* Set a consistent gap for desktop */
-  flex-wrap: wrap; /* Ensures wrapping on smaller screens */
+  gap: 20px;
+  flex-wrap: wrap;
   @media (max-width: 768px) {
     justify-content: center;
     gap: 20px; /* Adjust gap to 20px on smaller screens */
     margin-right: 15px;
   }
-    
 `;
 
-
 const BrandBox = styled.div`
-  width: 200px;
-  height: 200px;
+  width: 210px;
+  height: 210px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -52,9 +61,8 @@ const BrandBox = styled.div`
   @media (max-width: 768px) {
     width: 152px;
     height: 152px;
- 
   }
-    @media (min-width: 1600px) {
+  @media (min-width: 1600px) {
     width: 300px;
     height: 300px;
   }
