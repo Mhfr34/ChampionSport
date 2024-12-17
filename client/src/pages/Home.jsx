@@ -156,10 +156,6 @@ const Home = () => {
         <BrandsCard />
       
         <Section
-  initial="hidden"
-  whileInView="visible"
-  viewport={{ once: true, amount: 0.2 }}
-  variants={slideIn}  // Applying the slideIn animation
 >
   <Title3>New Arrivals - All Categories</Title3>
   <NewArrivalsLimited />
