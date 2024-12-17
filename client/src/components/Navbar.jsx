@@ -37,7 +37,6 @@ const Nav = styled.div`
 const NavbarContainer = styled.div`
   width: 100%;
   max-width: 100%;
-  padding: 0 24px;
   display: flex;
   gap: 14px;
   align-items: center;
@@ -59,12 +58,12 @@ const NavLogo = styled.div`
 `;
 
 const Logo = styled.img`
-  height: 120px;
-  width: 120px;
-  margin-right: 30px;
+  height: 120px; /* Ensure the logo doesn't overflow on small screens */
+  width: 120px;  /* Allow width to adjust for mobile */
+  max-width: 100%;  /* Ensure the logo scales down properly */
   @media (max-width: 768px) {
-    height: 80px;
-    width: 80px;
+    height: 60px; /* Adjust the logo size on mobile if necessary */
+    width: auto;
   }
 `;
 
