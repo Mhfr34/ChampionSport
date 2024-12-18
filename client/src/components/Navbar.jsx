@@ -58,6 +58,7 @@ const NavLogo = styled.div`
 `;
 
 const Logo = styled.img`
+cursor: pointer;
   height: 120px; /* Ensure the logo doesn't overflow on small screens */
   width: 120px;  /* Allow width to adjust for mobile */
   max-width: 100%;  /* Ensure the logo scales down properly */
@@ -227,6 +228,10 @@ const Navbar = ({ openAuth, setOpenAuth }) => {
     }
     navigate("/"); 
   };
+const LogoClick = () => {
+    navigate("/"); 
+  };
+
   const scrollToFooter = () => {
     // Scroll to the section with ID 'search-section'
     const section = document.getElementById('footer');
@@ -317,7 +322,7 @@ const Navbar = ({ openAuth, setOpenAuth }) => {
           />
         </MobileIcon>
 
-        <NavLogo>
+        <NavLogo onClick={LogoClick}>
           <Logo src={LogoImg} alt="Logo" />
         </NavLogo>
 
