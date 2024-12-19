@@ -5,7 +5,6 @@ import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
 
-// Reusable ProductCard component
 const ProductCard = ({ product, onFavoriteToggle, isFavorite }) => {
   return (
     <Card>
@@ -28,9 +27,8 @@ const ProductCard = ({ product, onFavoriteToggle, isFavorite }) => {
   );
 };
 
-// Main Favorite component
 const Favorite = () => {
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState([]); // Initialized as an empty array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -43,7 +41,7 @@ const Favorite = () => {
       if (!token) {
         if (!toastDisplayed.current) {
           toast.error("Please log in to view your favorites.");
-          toastDisplayed.current = true; // Mark toast as displayed
+          toastDisplayed.current = true;
         }
         navigate("/");
         return;
@@ -57,7 +55,7 @@ const Favorite = () => {
       );
 
       if (response.data.success) {
-        setFavorites(response.data.data);
+        setFavorites(response.data.data || []); // Ensure `favorites` is an array
       } else {
         setError(response.data.message || "Failed to fetch favorite products.");
       }
@@ -67,6 +65,7 @@ const Favorite = () => {
       setLoading(false);
     }
   }, [navigate]);
+
   const handleFavoriteToggle = async (productId, isFavorite) => {
     const token = localStorage.getItem("authToken");
     if (!token) {
@@ -106,7 +105,7 @@ const Favorite = () => {
   }, [fetchFavorites]);
 
   const isFavorite = (productId) =>
-    favorites.some((favorite) => favorite._id === productId);
+    favorites?.some((favorite) => favorite._id === productId);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -116,7 +115,7 @@ const Favorite = () => {
     return <ErrorMessage>{error}</ErrorMessage>;
   }
 
-  if (favorites.length === 0) {
+  if (!favorites || favorites.length === 0) {
     return <EmptyMessage>No favorite products found.</EmptyMessage>;
   }
 
@@ -138,6 +137,7 @@ const Favorite = () => {
 };
 
 export default Favorite;
+
 
 // Styled components for layout
 const Container = styled.div`

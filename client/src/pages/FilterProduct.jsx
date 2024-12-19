@@ -1,49 +1,16 @@
-import React, { useState, useEffect, memo } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
 import axios from "axios";
+import styled from "styled-components";
 import { FaFilter } from "react-icons/fa";
 import { BsChevronDown } from "react-icons/bs";
 import { FiTrash, FiEdit, FiHeart } from "react-icons/fi";
 import { toast } from "react-toastify";
 import UpdateProduct from "../components/UpdateProduct";
-import LazyLoad from "react-lazyload";
-
-// Reusable ProductCard component
-const ProductCard = memo(
-  ({ product, onEdit, onDelete, onFavoriteToggle, isFavorite, userRole }) => (
-    <Card>
-      <Link to={`/product/${product._id}`}>
-        <LazyLoad height={200} offset={100}>
-          <Image src={product.productImage[0]} alt={product.productName} />
-        </LazyLoad>
-      </Link>
-      <Icons>
-        {userRole === "ADMIN" ? (
-          <>
-            <EditIcon onClick={() => onEdit(product)} />
-            <TrashIcon onClick={() => onDelete(product._id)} />
-          </>
-        ) : (
-          <HeartIcon
-            filled={isFavorite}
-            onClick={() => onFavoriteToggle(product._id, isFavorite)}
-          />
-        )}
-      </Icons>
-      <Info>
-        <ProductName>{product.productName}</ProductName>
-        <Brand>{product.category}</Brand>
-        <Price>${product.price}</Price>
-        <Description>{product.description}</Description>
-      </Info>
-    </Card>
-  )
-);
 
 const FilterProduct = () => {
   const [products, setProducts] = useState([]);
-  const [favorites, setFavorites] = useState([]); // Ensure favorites is always an array
+  const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -54,6 +21,7 @@ const FilterProduct = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+
   const categories = ["MEN", "SHOES", "KIDS", "BAGS", "ACCESSORIES"];
 
   useEffect(() => {
@@ -64,28 +32,27 @@ const FilterProduct = () => {
         const categoriesArray = categoryParams ? categoryParams.split(",") : [];
         setSelectedCategories(categoriesArray);
 
-        const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/api/filter-product`,
-          { category: categoriesArray.length ? categoriesArray : undefined }
-        );
+        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/filter-product`, {
+          category: categoriesArray.length ? categoriesArray : undefined,
+        });
+
         setProducts(response.data.data);
+        setLoading(false);
       } catch (err) {
         setError(err.message);
-      } finally {
         setLoading(false);
       }
     };
 
     const fetchFavorites = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        if (!token) return;
+      const token = localStorage.getItem("authToken");
+      if (!token) return;
 
-        const response = await axios.get(
-          `${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setFavorites(response.data.data || []);
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setFavorites(response.data.data);
       } catch (error) {
         console.error("Error fetching favorites:", error);
       }
@@ -125,13 +92,13 @@ const FilterProduct = () => {
   };
 
   const handleDeleteClick = async (productId) => {
-    try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        toast.error("Authentication token not found.");
-        return;
-      }
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      toast.error("Authentication token not found.");
+      return;
+    }
 
+    try {
       const response = await axios.post(
         `${process.env.REACT_APP_BACKEND_URL}/api/delete-product`,
         { productId },
@@ -168,11 +135,11 @@ const FilterProduct = () => {
       );
 
       if (response.data.success) {
-        setFavorites(
-          isFavorite
-            ? favorites.filter((fav) => fav._id !== productId)
-            : [...favorites, products.find((product) => product._id === productId)]
-        );
+        const updatedFavorites = isFavorite
+          ? favorites.filter((fav) => fav._id !== productId)
+          : [...favorites, products.find((product) => product._id === productId)];
+
+        setFavorites(updatedFavorites);
         toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
       } else {
         toast.error("Failed to update favorites.");
@@ -213,15 +180,30 @@ const FilterProduct = () => {
 
       <CardGrid>
         {products.map((product) => (
-          <ProductCard
-            key={product._id}
-            product={product}
-            onEdit={handleEditClick}
-            onDelete={handleDeleteClick}
-            onFavoriteToggle={handleFavoriteToggle}
-            isFavorite={isFavorite(product._id)}
-            userRole={userRole}
-          />
+          <Card key={product._id}>
+            <Link to={`/product/${product._id}`}>
+            <Image src={product.productImage[0]} alt={product.productName} />
+            </Link> 
+            <Icons>
+              {userRole === "ADMIN" ? (
+                <>
+                  <EditIcon onClick={() => handleEditClick(product)} />
+                  <TrashIcon onClick={() => handleDeleteClick(product._id)} />
+                </>
+              ) : (
+                <HeartIcon
+                  filled={isFavorite(product._id)}
+                  onClick={() => handleFavoriteToggle(product._id, isFavorite(product._id))}
+                />
+              )}
+            </Icons>
+            <Info>
+              <ProductName>{product.productName}</ProductName>
+              <Brand>{product.category}</Brand>
+              <Price>${product.price}</Price>
+              <Description>{product.description}</Description>
+            </Info>
+          </Card>
         ))}
       </CardGrid>
 

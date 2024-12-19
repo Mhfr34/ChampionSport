@@ -5,60 +5,47 @@ import { Link } from "react-router-dom";
 import { FiTrash, FiEdit, FiHeart } from "react-icons/fi";
 import { toast } from "react-toastify";
 import UpdateProduct from "./UpdateProduct"; // Assuming this is your UpdateProduct modal
-
-// LazyLoad for product images
-import LazyLoad from "react-lazyload";
-
-// Debounce utility function
-const debounce = (func, delay) => {
-  let timer;
-  return (...args) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => func(...args), delay);
-  };
-};
+import LazyLoad from "react-lazyload"; // LazyLoad for product images
 
 // Reusable ProductCard component
 const ProductCard = memo(
-  ({ product, onEdit, onDelete, onFavoriteToggle, isFavorite, userRole }) => {
-    return (
-      <Card>
-        <Link to={`/product/${product._id}`}>
-          <LazyLoad height={200} offset={100}>
-            <Image src={product.productImage[0]} alt={product.productName} />
-          </LazyLoad>
-        </Link>
-        <Icons>
-          {userRole === "ADMIN" ? (
-            <>
-              <EditIcon onClick={() => onEdit(product)} />
-              <TrashIcon onClick={() => onDelete(product._id)} />
-            </>
-          ) : (
-            <HeartIcon
-              filled={isFavorite}
-              onClick={() => onFavoriteToggle(product._id, isFavorite)}
-            />
-          )}
-        </Icons>
-        <Info>
-          <ProductName>{product.productName}</ProductName>
-          <Brand>{product.brandName}</Brand>
-          <Price>${product.price}</Price>
-          <Description>{product.description}</Description>
-        </Info>
-      </Card>
-    );
-  }
+  ({ product, onEdit, onDelete, onFavoriteToggle, isFavorite, userRole }) => (
+    <Card>
+      <Link to={`/product/${product._id}`}>
+        <LazyLoad height={200} offset={100}>
+          <Image src={product.productImage[0]} alt={product.productName} />
+        </LazyLoad>
+      </Link>
+      <Icons>
+        {userRole === "ADMIN" ? (
+          <>
+            <EditIcon onClick={() => onEdit(product)} />
+            <TrashIcon onClick={() => onDelete(product._id)} />
+          </>
+        ) : (
+          <HeartIcon
+            filled={isFavorite}
+            onClick={() => onFavoriteToggle(product._id, isFavorite)}
+          />
+        )}
+      </Icons>
+      <Info>
+        <ProductName>{product.productName}</ProductName>
+        <Brand>{product.brandName}</Brand>
+        <Price>${product.price}</Price>
+        <Description>{product.description}</Description>
+      </Info>
+    </Card>
+  )
 );
 
-// Main NewArrivals component
 const NewArrivals = () => {
   const [products, setProducts] = useState([]);
   const [userRole, setUserRole] = useState(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState([]); // Initialize as an empty array
+  const [loading, setLoading] = useState(true); // Combined loading state
 
   const fetchProducts = async () => {
     try {
@@ -86,9 +73,9 @@ const NewArrivals = () => {
       );
 
       if (response.data.success) {
-        setFavorites(response.data.data);
+        setFavorites(response.data.data || []); // Ensure array
       } else {
-        console.log("Failed to fetch favorite products.");
+        console.error("Failed to fetch favorites");
       }
     } catch (error) {
       console.error("Error fetching favorites:", error);
@@ -98,8 +85,9 @@ const NewArrivals = () => {
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     setUserRole(role);
-    fetchProducts();
-    fetchFavorites();
+    Promise.all([fetchProducts(), fetchFavorites()]).finally(() =>
+      setLoading(false)
+    );
   }, []);
 
   const handleEditClick = (product) => {
@@ -129,7 +117,7 @@ const NewArrivals = () => {
 
       if (response.data.success) {
         toast.success("Product deleted successfully!");
-        fetchProducts();
+        setProducts(products.filter((product) => product._id !== productId));
       } else {
         toast.error("Failed to delete the product.");
       }
@@ -139,13 +127,7 @@ const NewArrivals = () => {
     }
   };
 
-  const handleFavoriteToggle = debounce(async (productId, isFavorite) => {
-    const updatedFavorites = isFavorite
-      ? favorites.filter((fav) => fav._id !== productId)
-      : [...favorites, { _id: productId }];
-
-    setFavorites(updatedFavorites);
-
+  const handleFavoriteToggle = async (productId, isFavorite) => {
     const token = localStorage.getItem("authToken");
     if (!token) {
       toast.error("Please login first!");
@@ -163,24 +145,26 @@ const NewArrivals = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (!response.data.success) {
-        throw new Error(response.data.message || "Failed to update favorites");
+      if (response.data.success) {
+        setFavorites(
+          isFavorite
+            ? favorites.filter((fav) => fav._id !== productId)
+            : [...favorites, products.find((product) => product._id === productId)]
+        );
+        toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
+      } else {
+        toast.error("Failed to update favorites.");
       }
-
-      toast.success(
-        isFavorite
-          ? "Product removed from favorites!"
-          : "Product added to favorites!"
-      );
     } catch (error) {
       console.error("Error updating favorites:", error);
       toast.error("An error occurred while updating favorites.");
-      setFavorites(favorites); // Rollback on error
     }
-  }, 300);
+  };
 
   const isFavorite = (productId) =>
-    favorites.some((favorite) => favorite._id === productId);
+    favorites && favorites.some((favorite) => favorite._id === productId);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <Container>

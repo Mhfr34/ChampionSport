@@ -1,172 +1,200 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import axios from "axios";
-import { FiTrash, FiEdit, FiHeart } from "react-icons/fi"; // Import icons
+import { FiTrash, FiEdit, FiHeart } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { useLocation, Link } from "react-router-dom";
-import UpdateProduct from "../components/UpdateProduct"; // Assuming this is your UpdateProduct modal
+import { debounce } from "lodash";
+import UpdateProduct from "../components/UpdateProduct";
 
 const Search = () => {
     const [products, setProducts] = useState([]);
     const [favorites, setFavorites] = useState([]);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
-    const [userRole, setUserRole] = useState(null);
-
+    const [isLoading, setIsLoading] = useState(false);
+    const userRole = useMemo(() => localStorage.getItem("userRole"), []);
+    const authToken = useMemo(() => localStorage.getItem("authToken"), []);
+    
     const location = useLocation();
 
-    const fetchSearchResults = async (query) => {
+    // Create axios instance with default config
+    const api = useMemo(() => {
+        const instance = axios.create({
+            baseURL: process.env.REACT_APP_BACKEND_URL,
+            headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+        });
+
+        // Add request interceptor for error handling
+        instance.interceptors.response.use(
+            response => response,
+            error => {
+                const message = error.response?.data?.message || "An error occurred";
+                toast.error(message);
+                return Promise.reject(error);
+            }
+        );
+
+        return instance;
+    }, [authToken]);
+
+    // Memoize search results fetch function
+    const fetchSearchResults = useCallback(async (query) => {
+        if (!query) return;
+        setIsLoading(true);
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/search?q=${query}`);
+            const response = await api.get(`/api/search?q=${encodeURIComponent(query)}`);
             if (response.data.success) {
                 setProducts(response.data.data);
-            } else {
-                console.log("No products found.");
             }
         } catch (error) {
-            console.log("Error fetching search results.");
+            console.error("Search error:", error);
+        } finally {
+            setIsLoading(false);
         }
-    };
+    }, [api]);
 
-    const fetchFavorites = async () => {
+    // Debounce search to prevent excessive API calls
+    const debouncedSearch = useMemo(
+        () => debounce(fetchSearchResults, 300),
+        [fetchSearchResults]
+    );
+
+    // Memoize favorites fetch function
+    const fetchFavorites = useCallback(async () => {
+        if (!authToken) return;
         try {
-            const token = localStorage.getItem("authToken");
-            if (!token) return;
-
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-
+            const response = await api.get('/api/get-favorite-products');
             if (response.data.success) {
-                setFavorites(response.data.data);
-            } else {
-                console.log(response.data.message || "Failed to fetch favorite products.");
+                setFavorites(response.data.data || []);
             }
         } catch (error) {
-            toast.error("Error fetching favorites.");
+            console.error("Favorites error:", error);
         }
-    };
+    }, [api, authToken]);
 
-    const handleFavoriteToggle = async (productId, isFavorite) => {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
+    const handleFavoriteToggle = useCallback(async (productId, isFavorite) => {
+        if (!authToken) {
             toast.error("Please login first!");
             return;
         }
 
         const endpoint = isFavorite
-            ? `${process.env.REACT_APP_BACKEND_URL}/api/remove-from-favorites`
-            : `${process.env.REACT_APP_BACKEND_URL}/api/add-to-favorites`;
+            ? '/api/remove-from-favorites'
+            : '/api/add-to-favorites';
 
         try {
-            const response = await axios.post(endpoint, { productId }, { headers: { Authorization: `Bearer ${token}` } });
-
+            const response = await api.post(endpoint, { productId });
             if (response.data.success) {
-                fetchFavorites();
-                toast.success(isFavorite ? "Product removed from favorites!" : "Product added to favorites!");
-            } else {
-                toast.error("Failed to update favorites.");
+                setFavorites(prev => 
+                    isFavorite
+                        ? prev.filter(fav => fav._id !== productId)
+                        : [...prev, { _id: productId }]
+                );
+                toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
             }
         } catch (error) {
-            toast.error("An error occurred while updating favorites.");
+            console.error("Favorite toggle error:", error);
         }
-    };
+    }, [api, authToken]);
 
-    const handleEditClick = (product) => {
-        setSelectedProduct(product);
-        setIsUpdateModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsUpdateModalOpen(false);
-        setSelectedProduct(null);
-        const query = new URLSearchParams(location.search).get("q");
-        if (query) {
-            fetchSearchResults(query);
+    const handleDeleteClick = useCallback(async (productId) => {
+        if (!authToken) {
+            toast.error("Authentication required");
+            return;
         }
-    };
 
-    const handleDeleteClick = async (productId) => {
         try {
-            const token = localStorage.getItem("authToken");
-            if (!token) {
-                toast.error("Authentication token not found.");
-                return;
-            }
-
-            const response = await axios.post(
-                `${process.env.REACT_APP_BACKEND_URL}/api/delete-product`,
-                { productId },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
+            const response = await api.post('/api/delete-product', { productId });
             if (response.data.success) {
+                setProducts(prev => prev.filter(product => product._id !== productId));
                 toast.success("Product deleted successfully!");
-                const query = new URLSearchParams(location.search).get("q");
-                if (query) {
-                    fetchSearchResults(query);
-                }
-            } else {
-                toast.error("Failed to delete the product.");
             }
         } catch (error) {
-            toast.error("An error occurred while deleting the product.");
+            console.error("Delete error:", error);
         }
-    };
+    }, [api, authToken]);
 
-    const isFavorite = (productId) => favorites.some((favorite) => favorite._id === productId);
+    // Memoize isFavorite check
+    const isFavorite = useCallback((productId) => 
+        favorites.some(favorite => favorite._id === productId),
+        [favorites]
+    );
 
     useEffect(() => {
         const query = new URLSearchParams(location.search).get("q");
         if (query) {
-            fetchSearchResults(query);
+            debouncedSearch(query);
         }
-
-        const role = localStorage.getItem("userRole");
-        setUserRole(role);
         fetchFavorites();
-    }, [location.search]);
+
+        return () => {
+            debouncedSearch.cancel();
+        };
+    }, [location.search, debouncedSearch, fetchFavorites]);
 
     return (
         <Container>
             <Title>Search Results: {products.length}</Title>
-            <CardGrid>
-                {products.map((product) => (
-                    <Card key={product._id}>
-                        <Link to={`/product/${product._id}`}>
-                            <Image src={product.productImage[0]} alt={product.productName} />
-                        </Link>
-                        <Icons>
-                            {userRole === "ADMIN" ? (
-                                <>
-                                    <EditIcon onClick={() => handleEditClick(product)} />
-                                    <TrashIcon onClick={() => handleDeleteClick(product._id)} />
-                                </>
-                            ) : (
-                                <HeartIcon
-                                    filled={isFavorite(product._id)}
-                                    onClick={() => handleFavoriteToggle(product._id, isFavorite(product._id))}
+            {isLoading ? (
+                <LoadingMessage>Loading...</LoadingMessage>
+            ) : (
+                <CardGrid>
+                    {products.map((product) => (
+                        <Card key={product._id}>
+                            <Link to={`/product/${product._id}`}>
+                                <Image 
+                                    src={product.productImage[0]} 
+                                    alt={product.productName} 
+                                    loading="lazy"
                                 />
-                            )}
-                        </Icons>
-                        <Info>
-                            <ProductName>{product.productName}</ProductName>
-                            <Brand>{product.brandName}</Brand>
-                            <Price>${product.price}</Price>
-                            <Description>{product.description}</Description>
-                        </Info>
-                    </Card>
-                ))}
-            </CardGrid>
+                            </Link>
+                            <Icons>
+                                {userRole === "ADMIN" ? (
+                                    <>
+                                        <EditIcon onClick={() => {
+                                            setSelectedProduct(product);
+                                            setIsUpdateModalOpen(true);
+                                        }} />
+                                        <TrashIcon onClick={() => handleDeleteClick(product._id)} />
+                                    </>
+                                ) : (
+                                    <HeartIcon
+                                        filled={isFavorite(product._id)}
+                                        onClick={() => handleFavoriteToggle(product._id, isFavorite(product._id))}
+                                    />
+                                )}
+                            </Icons>
+                            <Info>
+                                <ProductName>{product.productName}</ProductName>
+                                <Brand>{product.brandName}</Brand>
+                                <Price>${product.price}</Price>
+                                <Description>{product.description}</Description>
+                            </Info>
+                        </Card>
+                    ))}
+                </CardGrid>
+            )}
 
             {isUpdateModalOpen && (
-                <UpdateProduct productData={selectedProduct} onClose={handleCloseModal} />
+                <UpdateProduct
+                    productData={selectedProduct}
+                    onClose={() => {
+                        setIsUpdateModalOpen(false);
+                        setSelectedProduct(null);
+                        const query = new URLSearchParams(location.search).get("q");
+                        if (query) {
+                            fetchSearchResults(query);
+                        }
+                    }}
+                />
             )}
         </Container>
     );
 };
 
 export default Search;
+
 
 // Styled components for layout
 const Container = styled.div`
@@ -299,4 +327,12 @@ const Description = styled.p`
     font-size: 14px;
     color: #777;
     line-height: 1.5;
+`;
+const LoadingMessage = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    font-size: 1.2rem;
+    color: #666;
 `;
