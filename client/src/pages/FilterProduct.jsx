@@ -7,6 +7,7 @@ import { BsChevronDown } from "react-icons/bs";
 import { FiTrash, FiEdit, FiHeart } from "react-icons/fi";
 import { toast } from "react-toastify";
 import UpdateProduct from "../components/UpdateProduct";
+import SpinnerComponent from "../components/Spinner";
 
 const FilterProduct = () => {
   const [products, setProducts] = useState([]);
@@ -86,7 +87,15 @@ const FilterProduct = () => {
     setIsUpdateModalOpen(true);
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (updatedProduct) => {
+    if (updatedProduct) {
+      // Update the product directly in the state after the modal is closed
+      setProducts((prevProducts) =>
+        prevProducts.map((product) =>
+          product._id === updatedProduct._id ? updatedProduct : product
+        )
+      );
+    }
     setIsUpdateModalOpen(false);
     setSelectedProduct(null);
   };
@@ -153,7 +162,7 @@ const FilterProduct = () => {
     return Array.isArray(favorites) && favorites.some((favorite) => favorite._id === productId); // Ensure favorites is an array before using .some()
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <SpinnerComponent />;
   if (error) return <div>Error: {error}</div>;
 
   return (
@@ -184,8 +193,8 @@ const FilterProduct = () => {
         {products.map((product) => (
           <Card key={product._id}>
             <Link to={`/product/${product._id}`}>
-            <Image src={product.productImage[0]} alt={product.productName} />
-            </Link> 
+              <Image src={product.productImage[0]} alt={product.productName} />
+            </Link>
             <Icons>
               {userRole === "ADMIN" ? (
                 <>
@@ -210,13 +219,17 @@ const FilterProduct = () => {
       </CardGrid>
 
       {isUpdateModalOpen && (
-        <UpdateProduct productData={selectedProduct} onClose={handleCloseModal} />
+        <UpdateProduct
+          productData={selectedProduct}
+          onClose={handleCloseModal} // Pass the updated product as argument when closing
+        />
       )}
     </Container>
   );
 };
 
 export default FilterProduct;
+
 
 
 // Styled Components

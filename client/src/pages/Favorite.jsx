@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { FiHeart } from "react-icons/fi";
 import { Link, useNavigate } from "react-router-dom";
+import SpinnerComponent from "../components/Spinner";
 
 const ProductCard = ({ product, onFavoriteToggle, isFavorite }) => {
   return (
@@ -108,7 +109,7 @@ const Favorite = () => {
     favorites?.some((favorite) => favorite._id === productId);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <SpinnerComponent />;
   }
 
   if (error) {

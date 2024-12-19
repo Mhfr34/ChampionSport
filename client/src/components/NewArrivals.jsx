@@ -6,6 +6,7 @@ import { FiTrash, FiEdit, FiHeart } from "react-icons/fi";
 import { toast } from "react-toastify";
 import UpdateProduct from "./UpdateProduct"; // Assuming this is your UpdateProduct modal
 import LazyLoad from "react-lazyload"; // LazyLoad for product images
+import SpinnerComponent from "./Spinner";
 
 // Reusable ProductCard component
 const ProductCard = memo(
@@ -164,7 +165,7 @@ const NewArrivals = () => {
   const isFavorite = (productId) =>
     favorites && favorites.some((favorite) => favorite._id === productId);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <SpinnerComponent />;
 
   return (
     <Container>

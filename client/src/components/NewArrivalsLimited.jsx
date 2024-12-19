@@ -3,6 +3,7 @@ import axios from "axios";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import { FaArrowRight } from "react-icons/fa";
+import SpinnerComponent from "./Spinner";
 
 // Styled components
 const Container = styled.div`
@@ -77,10 +78,6 @@ const ProductPrice = styled.p`
   color: #000;
 `;
 
-const LoadingText = styled.p`
-  font-size: 1rem;
-  color: #888;
-`;
 
 const ErrorText = styled.p`
   font-size: 1rem;
@@ -137,7 +134,7 @@ const NewArrivalsLimited = () => {
     fetchProducts();
   }, []);
 
-  if (loading) return <LoadingText>Loading...</LoadingText>;
+  if (loading) return <SpinnerComponent />;
   if (error) return <ErrorText>Error: {error}</ErrorText>;
 
   return (

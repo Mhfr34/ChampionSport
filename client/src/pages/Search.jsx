@@ -6,191 +6,201 @@ import { toast } from "react-toastify";
 import { useLocation, Link } from "react-router-dom";
 import { debounce } from "lodash";
 import UpdateProduct from "../components/UpdateProduct";
+import SpinnerComponent from "../components/Spinner";
 
 const Search = () => {
-    const [products, setProducts] = useState([]);
-    const [favorites, setFavorites] = useState([]);
-    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const userRole = useMemo(() => localStorage.getItem("userRole"), []);
-    const authToken = useMemo(() => localStorage.getItem("authToken"), []);
-    
-    const location = useLocation();
+  const [products, setProducts] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const userRole = useMemo(() => localStorage.getItem("userRole"), []);
+  const authToken = useMemo(() => localStorage.getItem("authToken"), []);
+  
+  const location = useLocation();
 
-    // Create axios instance with default config
-    const api = useMemo(() => {
-        const instance = axios.create({
-            baseURL: process.env.REACT_APP_BACKEND_URL,
-            headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
-        });
+  // Create axios instance with default config
+  const api = useMemo(() => {
+    const instance = axios.create({
+      baseURL: process.env.REACT_APP_BACKEND_URL,
+      headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    });
 
-        // Add request interceptor for error handling
-        instance.interceptors.response.use(
-            response => response,
-            error => {
-                const message = error.response?.data?.message || "An error occurred";
-                toast.error(message);
-                return Promise.reject(error);
-            }
+    // Add request interceptor for error handling
+    instance.interceptors.response.use(
+      response => response,
+      error => {
+        const message = error.response?.data?.message || "An error occurred";
+        toast.error(message);
+        return Promise.reject(error);
+      }
+    );
+
+    return instance;
+  }, [authToken]);
+
+  // Memoize search results fetch function
+  const fetchSearchResults = useCallback(async (query) => {
+    if (!query) return;
+    setIsLoading(true);
+    try {
+      const response = await api.get(`/api/search?q=${encodeURIComponent(query)}`);
+      if (response.data.success) {
+        setProducts(response.data.data);
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [api]);
+
+  // Debounce search to prevent excessive API calls
+  const debouncedSearch = useMemo(
+    () => debounce(fetchSearchResults, 300),
+    [fetchSearchResults]
+  );
+
+  // Memoize favorites fetch function
+  const fetchFavorites = useCallback(async () => {
+    if (!authToken) return;
+    try {
+      const response = await api.get('/api/get-favorite-products');
+      if (response.data.success) {
+        setFavorites(response.data.data || []);
+      }
+    } catch (error) {
+      console.error("Favorites error:", error);
+    }
+  }, [api, authToken]);
+
+  const handleFavoriteToggle = useCallback(async (productId, isFavorite) => {
+    if (!authToken) {
+      toast.error("Please login first!");
+      return;
+    }
+
+    const endpoint = isFavorite
+      ? '/api/remove-from-favorites'
+      : '/api/add-to-favorites';
+
+    try {
+      const response = await api.post(endpoint, { productId });
+      if (response.data.success) {
+        setFavorites(prev => 
+          isFavorite
+            ? prev.filter(fav => fav._id !== productId)
+            : [...prev, { _id: productId }]
         );
+        toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
+      }
+    } catch (error) {
+      console.error("Favorite toggle error:", error);
+    }
+  }, [api, authToken]);
 
-        return instance;
-    }, [authToken]);
+  const handleDeleteClick = useCallback(async (productId) => {
+    if (!authToken) {
+      toast.error("Authentication required");
+      return;
+    }
 
-    // Memoize search results fetch function
-    const fetchSearchResults = useCallback(async (query) => {
-        if (!query) return;
-        setIsLoading(true);
-        try {
-            const response = await api.get(`/api/search?q=${encodeURIComponent(query)}`);
-            if (response.data.success) {
-                setProducts(response.data.data);
-            }
-        } catch (error) {
-            console.error("Search error:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [api]);
+    try {
+      const response = await api.post('/api/delete-product', { productId });
+      if (response.data.success) {
+        setProducts(prev => prev.filter(product => product._id !== productId));
+        toast.success("Product deleted successfully!");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+    }
+  }, [api, authToken]);
 
-    // Debounce search to prevent excessive API calls
-    const debouncedSearch = useMemo(
-        () => debounce(fetchSearchResults, 300),
-        [fetchSearchResults]
-    );
+  // Memoize isFavorite check
+  const isFavorite = useCallback((productId) => 
+    favorites.some(favorite => favorite._id === productId),
+    [favorites]
+  );
 
-    // Memoize favorites fetch function
-    const fetchFavorites = useCallback(async () => {
-        if (!authToken) return;
-        try {
-            const response = await api.get('/api/get-favorite-products');
-            if (response.data.success) {
-                setFavorites(response.data.data || []);
-            }
-        } catch (error) {
-            console.error("Favorites error:", error);
-        }
-    }, [api, authToken]);
+  useEffect(() => {
+    const query = new URLSearchParams(location.search).get("q");
+    if (query) {
+      debouncedSearch(query);
+    }
+    fetchFavorites();
 
-    const handleFavoriteToggle = useCallback(async (productId, isFavorite) => {
-        if (!authToken) {
-            toast.error("Please login first!");
-            return;
-        }
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [location.search, debouncedSearch, fetchFavorites]);
 
-        const endpoint = isFavorite
-            ? '/api/remove-from-favorites'
-            : '/api/add-to-favorites';
+  // Handle modal close and update products in state
+  const handleCloseModal = () => {
+    setIsUpdateModalOpen(false);
+    setSelectedProduct(null);
+    // Instead of refetching all products, just update the product list if modified
+    const query = new URLSearchParams(location.search).get("q");
+    if (query) {
+      fetchSearchResults(query); // This triggers re-fetch if search query is still active
+    }
+  };
 
-        try {
-            const response = await api.post(endpoint, { productId });
-            if (response.data.success) {
-                setFavorites(prev => 
-                    isFavorite
-                        ? prev.filter(fav => fav._id !== productId)
-                        : [...prev, { _id: productId }]
-                );
-                toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
-            }
-        } catch (error) {
-            console.error("Favorite toggle error:", error);
-        }
-    }, [api, authToken]);
-
-    const handleDeleteClick = useCallback(async (productId) => {
-        if (!authToken) {
-            toast.error("Authentication required");
-            return;
-        }
-
-        try {
-            const response = await api.post('/api/delete-product', { productId });
-            if (response.data.success) {
-                setProducts(prev => prev.filter(product => product._id !== productId));
-                toast.success("Product deleted successfully!");
-            }
-        } catch (error) {
-            console.error("Delete error:", error);
-        }
-    }, [api, authToken]);
-
-    // Memoize isFavorite check
-    const isFavorite = useCallback((productId) => 
-        favorites.some(favorite => favorite._id === productId),
-        [favorites]
-    );
-
-    useEffect(() => {
-        const query = new URLSearchParams(location.search).get("q");
-        if (query) {
-            debouncedSearch(query);
-        }
-        fetchFavorites();
-
-        return () => {
-            debouncedSearch.cancel();
-        };
-    }, [location.search, debouncedSearch, fetchFavorites]);
-
-    return (
-        <Container>
-            <Title>Search Results: {products.length}</Title>
-            {isLoading ? (
-                <LoadingMessage>Loading...</LoadingMessage>
-            ) : (
-                <CardGrid>
-                    {products.map((product) => (
-                        <Card key={product._id}>
-                            <Link to={`/product/${product._id}`}>
-                                <Image 
-                                    src={product.productImage[0]} 
-                                    alt={product.productName} 
-                                    loading="lazy"
-                                />
-                            </Link>
-                            <Icons>
-                                {userRole === "ADMIN" ? (
-                                    <>
-                                        <EditIcon onClick={() => {
-                                            setSelectedProduct(product);
-                                            setIsUpdateModalOpen(true);
-                                        }} />
-                                        <TrashIcon onClick={() => handleDeleteClick(product._id)} />
-                                    </>
-                                ) : (
-                                    <HeartIcon
-                                        filled={isFavorite(product._id)}
-                                        onClick={() => handleFavoriteToggle(product._id, isFavorite(product._id))}
-                                    />
-                                )}
-                            </Icons>
-                            <Info>
-                                <ProductName>{product.productName}</ProductName>
-                                <Brand>{product.brandName}</Brand>
-                                <Price>${product.price}</Price>
-                                <Description>{product.description}</Description>
-                            </Info>
-                        </Card>
-                    ))}
-                </CardGrid>
-            )}
-
-            {isUpdateModalOpen && (
-                <UpdateProduct
-                    productData={selectedProduct}
-                    onClose={() => {
-                        setIsUpdateModalOpen(false);
-                        setSelectedProduct(null);
-                        const query = new URLSearchParams(location.search).get("q");
-                        if (query) {
-                            fetchSearchResults(query);
-                        }
-                    }}
+  return (
+    <Container>
+      <Title>Search Results: {products.length}</Title>
+      {isLoading ? (
+        <SpinnerComponent />
+      ) : (
+        <CardGrid>
+          {products.map((product) => (
+            <Card key={product._id}>
+              {/* Prevent page reload on Link when editing or deleting */}
+              <Link to={`/product/${product._id}`} onClick={(e) => {
+                if (isUpdateModalOpen) {
+                  e.preventDefault();  // Prevent navigation when modal is open
+                }
+              }}>
+                <Image 
+                  src={product.productImage[0]} 
+                  alt={product.productName} 
+                  loading="lazy"
                 />
-            )}
-        </Container>
-    );
+              </Link>
+              <Icons>
+                {userRole === "ADMIN" ? (
+                  <>
+                    <EditIcon onClick={() => {
+                      setSelectedProduct(product);
+                      setIsUpdateModalOpen(true);
+                    }} />
+                    <TrashIcon onClick={() => handleDeleteClick(product._id)} />
+                  </>
+                ) : (
+                  <HeartIcon
+                    filled={isFavorite(product._id)}
+                    onClick={() => handleFavoriteToggle(product._id, isFavorite(product._id))}
+                  />
+                )}
+              </Icons>
+              <Info>
+                <ProductName>{product.productName}</ProductName>
+                <Brand>{product.brandName}</Brand>
+                <Price>${product.price}</Price>
+                <Description>{product.description}</Description>
+              </Info>
+            </Card>
+          ))}
+        </CardGrid>
+      )}
+
+      {isUpdateModalOpen && (
+        <UpdateProduct
+          productData={selectedProduct}
+          onClose={handleCloseModal}
+        />
+      )}
+    </Container>
+  );
 };
 
 export default Search;
@@ -327,12 +337,4 @@ const Description = styled.p`
     font-size: 14px;
     color: #777;
     line-height: 1.5;
-`;
-const LoadingMessage = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 200px;
-    font-size: 1.2rem;
-    color: #666;
 `;

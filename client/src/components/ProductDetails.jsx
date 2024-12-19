@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
+import SpinnerComponent from "./Spinner";
 
 const Container = styled.div`
   display: flex;
@@ -219,7 +220,7 @@ const ProductDetails = () => {
         {/* Product Details */}
         <DetailsWrapper>
           {loading ? (
-            <p>Loading...</p>
+            <SpinnerComponent />
           ) : (
             <>
               <BrandName>{data?.brandName}</BrandName>
