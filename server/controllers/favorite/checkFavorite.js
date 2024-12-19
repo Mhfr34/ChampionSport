@@ -26,8 +26,8 @@ const getFavoriteProductsController = async (req, res) => {
     if (!products || products.length === 0) {
       return res.json({
         message: "Products not found",
-        success: false,
-        error: true,
+        success: true,
+        error: false,
       });
     }
 

@@ -1,40 +1,56 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import { FiTrash, FiEdit, FiHeart } from "react-icons/fi"; // Import icons
+import { FiTrash, FiEdit, FiHeart } from "react-icons/fi";
 import { toast } from "react-toastify";
 import UpdateProduct from "./UpdateProduct"; // Assuming this is your UpdateProduct modal
 
-// Reusable ProductCard component for each product
-const ProductCard = ({ product, onEdit, onDelete, onFavoriteToggle, isFavorite, userRole }) => {
-  return (
-    <Card>
-      <Link to={`/product/${product._id}`}>
-        <Image src={product.productImage[0]} alt={product.productName} />
-      </Link>
-      <Icons>
-        {userRole === "ADMIN" ? (
-          <>
-            <EditIcon onClick={() => onEdit(product)} />
-            <TrashIcon onClick={() => onDelete(product._id)} />
-          </>
-        ) : (
-          <HeartIcon
-            filled={isFavorite}
-            onClick={() => onFavoriteToggle(product._id, isFavorite)}
-          />
-        )}
-      </Icons>
-      <Info>
-        <ProductName>{product.productName}</ProductName>
-        <Brand>{product.brandName}</Brand>
-        <Price>${product.price}</Price>
-        <Description>{product.description}</Description>
-      </Info>
-    </Card>
-  );
+// LazyLoad for product images
+import LazyLoad from "react-lazyload";
+
+// Debounce utility function
+const debounce = (func, delay) => {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => func(...args), delay);
+  };
 };
+
+// Reusable ProductCard component
+const ProductCard = memo(
+  ({ product, onEdit, onDelete, onFavoriteToggle, isFavorite, userRole }) => {
+    return (
+      <Card>
+        <Link to={`/product/${product._id}`}>
+          <LazyLoad height={200} offset={100}>
+            <Image src={product.productImage[0]} alt={product.productName} />
+          </LazyLoad>
+        </Link>
+        <Icons>
+          {userRole === "ADMIN" ? (
+            <>
+              <EditIcon onClick={() => onEdit(product)} />
+              <TrashIcon onClick={() => onDelete(product._id)} />
+            </>
+          ) : (
+            <HeartIcon
+              filled={isFavorite}
+              onClick={() => onFavoriteToggle(product._id, isFavorite)}
+            />
+          )}
+        </Icons>
+        <Info>
+          <ProductName>{product.productName}</ProductName>
+          <Brand>{product.brandName}</Brand>
+          <Price>${product.price}</Price>
+          <Description>{product.description}</Description>
+        </Info>
+      </Card>
+    );
+  }
+);
 
 // Main NewArrivals component
 const NewArrivals = () => {
@@ -46,7 +62,9 @@ const NewArrivals = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-all-product`);
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/api/get-all-product`
+      );
       if (response.data.success) {
         setProducts(response.data.data);
       } else {
@@ -60,37 +78,23 @@ const NewArrivals = () => {
   const fetchFavorites = async () => {
     try {
       const token = localStorage.getItem("authToken");
-      if (!token) {
-       
-        return;
-      }
-  
-      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
+      if (!token) return;
+
+      const response = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
       if (response.data.success) {
-        const favoritesData = response.data.data;
-        setFavorites(favoritesData); // Store the favorite products
-  
-        // Show toast only if the favorites list is empty and it has not been shown before
-        if (favoritesData.length === 0 && !localStorage.getItem("favoritesChecked")) {
-          toast.info("Your favorites list is empty.");
-          localStorage.setItem("favoritesChecked", "true"); // Mark the favorites list check
-        }
+        setFavorites(response.data.data);
       } else {
-        toast.error(response.data.message || "Failed to fetch favorite products.");
+        console.log("Failed to fetch favorite products.");
       }
     } catch (error) {
       console.error("Error fetching favorites:", error);
-      
     }
   };
-  
-  
-  
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     setUserRole(role);
@@ -135,45 +139,48 @@ const NewArrivals = () => {
     }
   };
 
-  const handleFavoriteToggle = async (productId, isFavorite) => {
+  const handleFavoriteToggle = debounce(async (productId, isFavorite) => {
+    const updatedFavorites = isFavorite
+      ? favorites.filter((fav) => fav._id !== productId)
+      : [...favorites, { _id: productId }];
+
+    setFavorites(updatedFavorites);
+
     const token = localStorage.getItem("authToken");
     if (!token) {
       toast.error("Please login first!");
       return;
     }
-  
+
     const endpoint = isFavorite
       ? `${process.env.REACT_APP_BACKEND_URL}/api/remove-from-favorites`
       : `${process.env.REACT_APP_BACKEND_URL}/api/add-to-favorites`;
-  
+
     try {
       const response = await axios.post(
         endpoint,
         { productId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  
-      if (response.data.success) {
-        // After the favorite toggle, check if the product was removed or added and update the toast accordingly
-        if (isFavorite) {
-          toast.success("Product removed from favorites!");
-        } else {
-          toast.success("Product added to favorites!");
-        }
-        
-        // Fetch updated favorite list only once after the action
-        fetchFavorites();
-      } else {
-        toast.error("Failed to update favorites.");
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to update favorites");
       }
+
+      toast.success(
+        isFavorite
+          ? "Product removed from favorites!"
+          : "Product added to favorites!"
+      );
     } catch (error) {
       console.error("Error updating favorites:", error);
       toast.error("An error occurred while updating favorites.");
+      setFavorites(favorites); // Rollback on error
     }
-  };
-  
+  }, 300);
 
-  const isFavorite = (productId) => favorites.some((favorite) => favorite._id === productId);
+  const isFavorite = (productId) =>
+    favorites.some((favorite) => favorite._id === productId);
 
   return (
     <Container>

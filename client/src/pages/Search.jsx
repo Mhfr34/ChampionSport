@@ -21,10 +21,10 @@ const Search = () => {
             if (response.data.success) {
                 setProducts(response.data.data);
             } else {
-                toast.error("No products found.");
+                console.log("No products found.");
             }
         } catch (error) {
-            toast.error("Error fetching search results.");
+            console.log("Error fetching search results.");
         }
     };
 
@@ -40,7 +40,7 @@ const Search = () => {
             if (response.data.success) {
                 setFavorites(response.data.data);
             } else {
-                toast.error(response.data.message || "Failed to fetch favorite products.");
+                console.log(response.data.message || "Failed to fetch favorite products.");
             }
         } catch (error) {
             toast.error("Error fetching favorites.");
