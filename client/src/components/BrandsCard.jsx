@@ -68,7 +68,10 @@ const BrandBox = styled.div`
     width: 152px;
     height: 152px;
   }
- 
+  @media (min-width: 1600px) {
+    width: 240px;
+    height: 240px;
+  }
 `;
 
 const BrandLogo = styled.img`
