@@ -65,7 +65,7 @@ const BrandBox = styled.div`
   background-color: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   @media (max-width: 768px) {
-    width: 152px;
+    width: 152px; 
     height: 152px;
   }
   @media (min-width: 1600px) {
