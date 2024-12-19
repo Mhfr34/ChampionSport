@@ -211,7 +211,7 @@ const FilterProduct = () => {
             </Icons>
             <Info>
               <ProductName>{product.productName}</ProductName>
-              <Brand>{product.category}</Brand>
+              <Brand>{product.brandName}</Brand>
               <Price>${product.price}</Price>
               <Description>{product.description}</Description>
             </Info>
