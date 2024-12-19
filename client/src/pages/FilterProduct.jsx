@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styled from "styled-components";
@@ -6,67 +6,74 @@ import { FaFilter } from "react-icons/fa";
 import { BsChevronDown } from "react-icons/bs";
 import { FiTrash, FiEdit, FiHeart } from "react-icons/fi";
 import { toast } from "react-toastify";
+import { debounce } from "lodash";
 import UpdateProduct from "../components/UpdateProduct";
 import SpinnerComponent from "../components/Spinner";
 
 const FilterProduct = () => {
   const [products, setProducts] = useState([]);
   const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [userRole, setUserRole] = useState(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const location = useLocation();
   const navigate = useNavigate();
-
+  const userRole = useMemo(() => localStorage.getItem("userRole"), []);
+  const authToken = useMemo(() => localStorage.getItem("authToken"), []);
+  
   const categories = ["MEN", "SHOES", "KIDS", "BAGS", "ACCESSORIES"];
 
-  useEffect(() => {
-    const fetchFilteredProducts = async () => {
-      try {
-        const searchParams = new URLSearchParams(location.search);
-        const categoryParams = searchParams.get("category");
-        const categoriesArray = categoryParams ? categoryParams.split(",") : [];
-        setSelectedCategories(categoriesArray);
+  // Create axios instance with default config
+  const api = useMemo(() => {
+    const instance = axios.create({
+      baseURL: process.env.REACT_APP_BACKEND_URL,
+      headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+    });
 
-        const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/filter-product`, {
-          category: categoriesArray.length ? categoriesArray : undefined,
-        });
-
-        setProducts(response.data.data);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
+    // Add request interceptor for error handling
+    instance.interceptors.response.use(
+      response => response,
+      error => {
+        const message = error.response?.data?.message || "An error occurred";
+        toast.error(message);
+        return Promise.reject(error);
       }
-    };
+    );
 
-    const fetchFavorites = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
+    return instance;
+  }, [authToken]);
 
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/get-favorite-products`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setFavorites(response.data.data);
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
+  // Fetch products based on selected categories
+  const fetchFilteredProducts = useCallback(async (categoriesArray) => {
+    setLoading(true);
+    try {
+      const response = await api.post(`${process.env.REACT_APP_BACKEND_URL}/api/filter-product`, {
+        category: categoriesArray.length ? categoriesArray : undefined,
+      });
+      setProducts(response.data.data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [api]);
+
+  // Fetch favorites list
+  const fetchFavorites = useCallback(async () => {
+    if (!authToken) return;
+    try {
+      const response = await api.get("/api/get-favorite-products");
+      if (response.data.success) {
+        setFavorites(response.data.data || []);
       }
-    };
-
-    const role = localStorage.getItem("userRole");
-    setUserRole(role);
-
-    fetchFilteredProducts();
-    fetchFavorites();
-  }, [location.search]);
-
-  const toggleDropdown = () => setDropdownOpen(!dropdownOpen);
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+    }
+  }, [api, authToken]);
 
   const handleCategorySelect = (category) => {
     const updatedCategories = selectedCategories.includes(category)
@@ -82,67 +89,18 @@ const FilterProduct = () => {
     navigate({ search: searchParams.toString() });
   };
 
-  const handleEditClick = (product) => {
-    setSelectedProduct(product);
-    setIsUpdateModalOpen(true);
-  };
-
-  const handleCloseModal = (updatedProduct) => {
-    if (updatedProduct) {
-      // Update the product directly in the state after the modal is closed
-      setProducts((prevProducts) =>
-        prevProducts.map((product) =>
-          product._id === updatedProduct._id ? updatedProduct : product
-        )
-      );
-    }
-    setIsUpdateModalOpen(false);
-    setSelectedProduct(null);
-  };
-
-  const handleDeleteClick = async (productId) => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      toast.error("Authentication token not found.");
-      return;
-    }
-
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_BACKEND_URL}/api/delete-product`,
-        { productId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (response.data.success) {
-        toast.success("Product deleted successfully!");
-        setProducts(products.filter((product) => product._id !== productId));
-      } else {
-        toast.error("Failed to delete the product.");
-      }
-    } catch (error) {
-      toast.error("An error occurred while deleting the product.");
-    }
-  };
-
   const handleFavoriteToggle = async (productId, isFavorite) => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
+    if (!authToken) {
       toast.error("Please login first!");
       return;
     }
 
     const endpoint = isFavorite
-      ? `${process.env.REACT_APP_BACKEND_URL}/api/remove-from-favorites`
-      : `${process.env.REACT_APP_BACKEND_URL}/api/add-to-favorites`;
+      ? "/api/remove-from-favorites"
+      : "/api/add-to-favorites";
 
     try {
-      const response = await axios.post(
-        endpoint,
-        { productId },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const response = await api.post(endpoint, { productId });
       if (response.data.success) {
         const updatedFavorites = isFavorite
           ? favorites.filter((fav) => fav._id !== productId)
@@ -150,17 +108,60 @@ const FilterProduct = () => {
 
         setFavorites(updatedFavorites);
         toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
-      } else {
-        toast.error("Failed to update favorites.");
       }
     } catch (error) {
       toast.error("An error occurred while updating favorites.");
     }
   };
 
-  const isFavorite = (productId) => {
-    return Array.isArray(favorites) && favorites.some((favorite) => favorite._id === productId); // Ensure favorites is an array before using .some()
+  const handleDeleteClick = async (productId) => {
+    if (!authToken) {
+      toast.error("Authentication required");
+      return;
+    }
+
+    try {
+      const response = await api.post("/api/delete-product", { productId });
+      if (response.data.success) {
+        setProducts(prev => prev.filter(product => product._id !== productId));
+        toast.success("Product deleted successfully!");
+      }
+    } catch (error) {
+      toast.error("An error occurred while deleting the product.");
+    }
   };
+
+  const handleEditClick = (product) => {
+    setSelectedProduct(product);
+    setIsUpdateModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsUpdateModalOpen(false);
+    setSelectedProduct(null);
+  };
+
+  const isFavorite = (productId) => {
+    return favorites.some(favorite => favorite._id === productId);
+  };
+
+  // Debounce filter updates
+  const debouncedFetchFilteredProducts = useMemo(
+    () => debounce(fetchFilteredProducts, 300),
+    [fetchFilteredProducts]
+  );
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const categoriesArray = queryParams.get("category") ? queryParams.get("category").split(",") : [];
+    setSelectedCategories(categoriesArray);
+    debouncedFetchFilteredProducts(categoriesArray);
+    fetchFavorites();
+
+    return () => {
+      debouncedFetchFilteredProducts.cancel();
+    };
+  }, [location.search, debouncedFetchFilteredProducts, fetchFavorites]);
 
   if (loading) return <SpinnerComponent />;
   if (error) return <div>Error: {error}</div>;
@@ -169,7 +170,7 @@ const FilterProduct = () => {
     <Container>
       <Title>Filter Products</Title>
       <FilterContainer>
-        <FilterButton onClick={toggleDropdown}>
+        <FilterButton onClick={() => setDropdownOpen(!dropdownOpen)}>
           <FaFilter size={18} style={{ marginRight: "8px" }} />
           <BsChevronDown size={14} />
         </FilterButton>
@@ -219,10 +220,7 @@ const FilterProduct = () => {
       </CardGrid>
 
       {isUpdateModalOpen && (
-        <UpdateProduct
-          productData={selectedProduct}
-          onClose={handleCloseModal} // Pass the updated product as argument when closing
-        />
+        <UpdateProduct productData={selectedProduct} onClose={handleCloseModal} />
       )}
     </Container>
   );

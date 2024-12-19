@@ -186,8 +186,8 @@ const Card = styled.div`
 
 const Image = styled.img`
   width: 100%;
-  height: 180px;
-  object-fit: contain;
+  height: 280px;
+  object-fit: fill;
   background-color: transparent;
 `;
 
