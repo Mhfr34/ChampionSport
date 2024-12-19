@@ -149,7 +149,9 @@ const FilterProduct = () => {
     }
   };
 
-  const isFavorite = (productId) => favorites.some((favorite) => favorite._id === productId);
+  const isFavorite = (productId) => {
+    return Array.isArray(favorites) && favorites.some((favorite) => favorite._id === productId); // Ensure favorites is an array before using .some()
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
