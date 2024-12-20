@@ -153,42 +153,42 @@ const Search = () => {
       ) : (
         <CardGrid>
           {products.map((product) => (
-            <Card key={product._id}>
-              {/* Prevent page reload on Link when editing or deleting */}
-              <Link to={`/product/${product._id}`} onClick={(e) => {
-                if (isUpdateModalOpen) {
-                  e.preventDefault();  // Prevent navigation when modal is open
-                }
-              }}>
-                <Image 
-                  src={product.productImage[0]} 
-                  alt={product.productName} 
-                  loading="lazy"
-                />
-              </Link>
-              <Icons>
-                {userRole === "ADMIN" ? (
-                  <>
-                    <EditIcon onClick={() => {
-                      setSelectedProduct(product);
-                      setIsUpdateModalOpen(true);
-                    }} />
-                    <TrashIcon onClick={() => handleDeleteClick(product._id)} />
-                  </>
-                ) : (
-                  <HeartIcon
-                    filled={isFavorite(product._id)}
-                    onClick={() => handleFavoriteToggle(product._id, isFavorite(product._id))}
-                  />
-                )}
-              </Icons>
-              <Info>
-                <ProductName>{product.productName}</ProductName>
-                <Brand>{product.brandName}</Brand>
-                <Price>${product.price}</Price>
-                <Description>{product.description}</Description>
-              </Info>
-            </Card>
+           <Card key={product._id}>
+           <CategoryLabel category={product.category}>{product.category}</CategoryLabel>
+           <Link to={`/product/${product._id}`} onClick={(e) => {
+               if (isUpdateModalOpen) {
+                   e.preventDefault();  // Prevent navigation when modal is open
+               }
+           }}>
+               <Image 
+                   src={product.productImage[0]} 
+                   alt={product.productName} 
+                   loading="lazy"
+               />
+           </Link>
+           <Icons>
+               {userRole === "ADMIN" ? (
+                   <>
+                       <EditIcon onClick={() => {
+                           setSelectedProduct(product);
+                           setIsUpdateModalOpen(true);
+                       }} />
+                       <TrashIcon onClick={() => handleDeleteClick(product._id)} />
+                   </>
+               ) : (
+                   <HeartIcon
+                       filled={isFavorite(product._id)}
+                       onClick={() => handleFavoriteToggle(product._id, isFavorite(product._id))}
+                   />
+               )}
+           </Icons>
+           <Info>
+               <ProductName>{product.productName}</ProductName>
+               <Brand>{product.brandName}</Brand>
+               <Price>${product.price}</Price>
+               <Description>{product.description}</Description>
+           </Info>
+       </Card>       
           ))}
         </CardGrid>
       )}
@@ -250,6 +250,38 @@ const Card = styled.div`
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 `;
+
+const CategoryLabel = styled.div`
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: ${({ category }) => getCategoryColor(category)};
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-transform: uppercase;
+`;
+
+// Function to return the background color based on the category
+const getCategoryColor = (category) => {
+    switch (category) {
+        case "MEN":
+            return "#007BFF"; // Blue
+        case "BAGS":
+            return "#28A745"; // Green
+        case "KIDS":
+            return "#FFC107"; // Yellow
+        case "SHOES":
+            return "#DC3545"; // Red
+        case "ACCESSORIES":
+            return "#6F42C1"; // Purple
+        default:
+            return "#6C757D"; // Gray
+    }
+};
+
 
 const Image = styled.img`
     width: 100%;

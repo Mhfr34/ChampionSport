@@ -8,10 +8,29 @@ import UpdateProduct from "./UpdateProduct"; // Assuming this is your UpdateProd
 import LazyLoad from "react-lazyload"; // LazyLoad for product images
 import SpinnerComponent from "./Spinner";
 
+// Function to get category-specific background color
+const getCategoryColor = (category) => {
+  switch (category) {
+    case "MEN":
+      return "#007BFF"; // Blue
+    case "BAGS":
+      return "#28A745"; // Green
+    case "KIDS":
+      return "#FFC107"; // Yellow
+    case "SHOES":
+      return "#DC3545"; // Red
+    case "ACCESSORIES":
+      return "#6F42C1"; // Purple
+    default:
+      return "#6C757D"; // Gray
+  }
+};
+
 // Reusable ProductCard component
 const ProductCard = memo(
   ({ product, onEdit, onDelete, onFavoriteToggle, isFavorite, userRole }) => (
     <Card>
+      <CategoryLabel category={product.category}>{product.category}</CategoryLabel>
       <Link to={`/product/${product._id}`}>
         <LazyLoad height={200} offset={100}>
           <Image src={product.productImage[0]} alt={product.productName} />
@@ -45,8 +64,8 @@ const NewArrivals = () => {
   const [userRole, setUserRole] = useState(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [favorites, setFavorites] = useState([]); // Initialize as an empty array
-  const [loading, setLoading] = useState(true); // Combined loading state
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchProducts = async () => {
     try {
@@ -74,7 +93,7 @@ const NewArrivals = () => {
       );
 
       if (response.data.success) {
-        setFavorites(response.data.data || []); // Ensure array
+        setFavorites(response.data.data || []);
       } else {
         console.error("Failed to fetch favorites");
       }
@@ -152,7 +171,9 @@ const NewArrivals = () => {
             ? favorites.filter((fav) => fav._id !== productId)
             : [...favorites, products.find((product) => product._id === productId)]
         );
-        toast.success(isFavorite ? "Removed from favorites!" : "Added to favorites!");
+        toast.success(
+          isFavorite ? "Removed from favorites!" : "Added to favorites!"
+        );
       } else {
         toast.error("Failed to update favorites.");
       }
@@ -237,6 +258,19 @@ const Card = styled.div`
   }
 `;
 
+const CategoryLabel = styled.div`
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background-color: ${({ category }) => getCategoryColor(category)};
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+  text-transform: uppercase;
+`;
+
 const Image = styled.img`
   width: 100%;
   height: 280px;
@@ -280,7 +314,7 @@ const TrashIcon = styled(FiTrash)`
 `;
 
 const HeartIcon = styled(FiHeart)`
-  color:${({ filled }) => (filled ? "red" : "black")};
+  color: ${({ filled }) => (filled ? "red" : "black")};
   background: white;
   fill: ${({ filled }) => (filled ? "red" : "white")};
   padding: 5px;
@@ -323,4 +357,3 @@ const Description = styled.p`
   color: #777;
   line-height: 1.5;
 `;
-
