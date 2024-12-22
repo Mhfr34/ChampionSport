@@ -171,7 +171,8 @@ const ProductDetails = () => {
 
   useEffect(() => {
     fetchProductDetails();
-  }, [fetchProductDetails]);
+    window.scrollTo(0, 0); // Ensure the page scrolls to the top when the component loads
+  }, [fetchProductDetails]);  
 
   const handleMouseMove = (e) => {
     const { left, top, width, height } = e.target.getBoundingClientRect();

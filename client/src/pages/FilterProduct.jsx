@@ -167,7 +167,7 @@ const FilterProduct = () => {
     setSelectedCategories(categoriesArray);
     debouncedFetchFilteredProducts(categoriesArray);
     fetchFavorites();
-
+    window.scrollTo(0, 0);
     return () => {
       debouncedFetchFilteredProducts.cancel();
     };

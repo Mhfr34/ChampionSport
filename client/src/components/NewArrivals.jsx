@@ -105,6 +105,7 @@ const NewArrivals = () => {
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     setUserRole(role);
+    window.scrollTo(0, 0);
     Promise.all([fetchProducts(), fetchFavorites()]).finally(() =>
       setLoading(false)
     );
